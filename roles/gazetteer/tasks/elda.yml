@@ -30,23 +30,23 @@
 
   
 - name: install Linked Data API
-  get_url: dest=/tmp/dna.war force=no  url=https://github.com/rob-metalinkage/dna_demodata/blob/master/dna.war?raw=true
+  get_url: dest={{ downloads_persist }}/dna.war force=no  url=https://github.com/rob-metalinkage/dna_demodata/blob/master/dna.war?raw=true
   tags: elda
 
 - name: copy war to tomcat
   # Will skip if file war installed
-  command: cp /tmp/dna.war /var/lib/tomcat7/webapps/ creates=/var/lib/tomcat7/webapps/dna.war
+  command: cp {{ downloads_persist }}/dna.war /var/lib/{{ tomcat }}/webapps/ creates=/var/lib/{{ tomcat }}/webapps/dna.war
   tags: elda
   
 - name: clear bundled ELDA configs
-  file: dest=/var/lib/tomcat7/webapps/dna/lda-assets/resources/* state=absent
+  file: dest=/var/lib/{{ tomcat }}/webapps/dna/lda-assets/resources/* state=absent
   tags: [elda, elda-config]
 
 - name: update ELDA configs
-  shell: cp -r {{ top_project }}/django-skosxl/configs/* /var/lib/tomcat7/webapps/dna/lda-assets/resources
+  shell: cp -r {{ top_project }}/django-skosxl/configs/* /var/lib/{{ tomcat }}/webapps/dna/lda-assets/resources
   become: true
   tags: [elda, elda-config]
   
 - name: set perms 
-  file: path=/var/lib/tomcat7/webapps/dna/lda-assets/resources group=tomcat7 owner=tomcat7 mode=755 
+  file: path=/var/lib/{{ tomcat }}/webapps/dna/lda-assets/resources group={{ tomcat }} owner={{ tomcat }} mode=755 
   tags: [elda, elda-config]
