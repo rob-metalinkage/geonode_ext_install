@@ -1,1 +1,63 @@
 ---
+
+- name: Install unzip
+  apt: pkg=unzip state=present
+  tags: unzip
+
+- name: install Apache2
+  apt: pkg={{ item }} state=present
+  become: yes
+  with_items:
+   - apache2
+  tags: apache
+
+- name: apache modules
+  become: yes
+  apache2_module:
+    state: present
+    name: proxy
+  tags: apache
+
+- name: apache modules
+  become: yes
+  apache2_module:
+    state: present
+    name: proxy_ajp
+  tags: apache
+
+- name: configure Apache
+  become: yes
+  blockinfile:
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - AJP"
+    dest:  /etc/apache2/sites-enabled/000-default.conf
+    follow: yes
+    insertbefore: "</VirtualHost"
+    block: |
+      ProxyPass /rdf4j-workbench ajp://localhost:8009/rdf4j-workbench
+      ProxyPassReverse /rdf4j-workbench ajp://localhost:8009/rdf4j-workbench
+      ProxyPass /rdf4j-server ajp://localhost:8009/rdf4j-server
+      ProxyPassReverse /rdf4j-server ajp://localhost:8009/rdf4j-server
+      ProxyPass /sissvoc ajp://localhost:8009/sissvoc
+      ProxyPassReverse /sissvoc ajp://localhost:8009/sissvoc
+  tags: apache
+  notify: restart apache2
+
+- name: install Tomcat
+  become: yes
+  apt: pkg={{ item }} state=present
+  with_items:
+   - "{{ tomcat }}"
+   - unzip
+  tags: tomcat
+
+- name: configure Tomcat for AJP
+  become: yes
+  blockinfile:
+    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK - AJP -->"
+    dest:  /etc/{{ tomcat }}/server.xml
+    follow: yes
+    insertafter: "Define an AJP 1.3 Connector on port 8009"
+    block: |
+        <Connector port="8009" enableLookups="false" redirectPort="8443" protocol="AJP/1.3" />
+  tags: tomcat
+  notify: restart tomcat
