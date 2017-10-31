@@ -1,4 +1,18 @@
 ---
+---
+
+- name: restart apache2
+  service: name=apache2 state=restarted
+
+- name: restart tomcat
+  service: name="{{ tomcat }}" state=restarted
+  
+- name: check sissvoc running
+  uri: url=http://localhost/
+  
+- name: restart gunicorn
+  service: name=gunicorn state=restarted
+
 - name: restart django
   file: path='{{ project_path }}/{{ package }}/wsgi.py' state=touch
   notify: check django running
