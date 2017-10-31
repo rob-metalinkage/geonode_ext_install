@@ -1,9 +1,9 @@
 ---
-- include: setup.yml
-  tags: gazetteer
-
+# installs gazetteer modules into installed geonode
+# to simply install ELDA and SISSVoc components run 
+# ansible-playbook gazetteer.yml -t elda
 - include: gazetteer.yml
   tags: gazetteer
 
 - include: elda.yml
-  tags: gazetteer
+  tags: elda

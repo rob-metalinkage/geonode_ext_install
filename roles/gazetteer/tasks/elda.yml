@@ -1,5 +1,34 @@
 ---
+- name: persist download cache
+  file: name="{{ downloads_persist }}" state=directory
+  
+- name: install RDF4J
+  # unarchive: creates=/tmp/eclipse-rdf4j-2.2.2/war/rdf4j-server.war dest=/tmp  remote_src=yes src=http://www.eclipse.org/downloads/download.php?file=/rdf4j/eclipse-rdf4j-2.1.1-sdk.zip&r=1
+  unarchive: creates="{{ downloads_persist }}/eclipse-rdf4j-{{ rdf4j_ver }}/war/rdf4j-server.war" dest="{{ downloads_persist }}"  copy=no src=http://www.eclipse.org/downloads/download.php?file=/rdf4j/eclipse-rdf4j-{{ rdf4j_ver }}-sdk.zip&r=1
+  tags: rdf4j
 
+- name: Ensures /usr/share/{{ tomcat }}/.RDF4J dir exists
+  file: path=/usr/share/{{ tomcat }}/.RDF4J group={{ tomcat }} owner={{ tomcat }} mode=755 state=directory
+  tags: rdf4j
+
+- name: check if war installed
+  stat: path=/var/lib/{{ tomcat }}/webapps/rdf4j-server.war
+  register: file_exists
+  tags: rdf4j
+
+- name: mv war files to tomcat
+  shell: cp {{ downloads_persist }}/eclipse-rdf4j-{{ rdf4j_ver }}/war/*.war /var/lib/{{ tomcat }}/webapps/
+  when: not file_exists.stat.exists
+  tags: rdf4j
+
+- name: wait for war to deploy
+  wait_for:
+    path: /var/lib/{{ tomcat }}/webapps/rdf4j-server
+    state: present
+
+
+
+  
 - name: install Linked Data API
   get_url: dest=/tmp/dna.war force=no  url=https://github.com/rob-metalinkage/dna_demodata/blob/master/dna.war?raw=true
   tags: elda

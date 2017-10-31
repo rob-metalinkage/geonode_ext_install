@@ -5,4 +5,6 @@ skos_app: '{{ top_project }}/django-skosxl'
 rdf_app: '{{ top_project }}/django-rdf_io'
 url_app: '{{ top_project }}/django-rdf_io'
 
-rdf4j_download: 
+rdf4j_ver: 2.2.2
+tomcat: tomcat8
+downloads_persist: downloads 
