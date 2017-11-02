@@ -78,6 +78,8 @@ svoc:api a api:API;
     foaf:primaryTopic <https://wiki.csiro.au/display/SIRF/SISSVoc+in+SIRF>;
 
      api:sparqlEndpoint <http://localhost:8080/rdf4j-server/repositories/test>
+	            api:variable [api:name "searchTargetLabel"; api:value "Find Concept"];
+           api:variable [api:name "searchTarget"; api:value "skos/concept"];
     .
 <http://localhost:8080/rdf4j-server/repositories/test> elda:supportsNestedSelect true .
 	
