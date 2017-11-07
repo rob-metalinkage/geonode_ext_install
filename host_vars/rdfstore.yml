@@ -10,4 +10,4 @@ tomcat: tomcat8
 downloads_persist: downloads 
 
 repos:
-  - { repo: 'test', repo_title: 'Test repo - configure in host_vars/rdfstore.yml',  type: 'memory-spin-rdfs' , files_dir: 'test'}
+  - { repo: 'test', repo_title: 'Test repo - configure in host_vars/rdfstore.yml',  type: 'memory-spin-rdfs' , files_dir: '../../../test'}

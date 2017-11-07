@@ -1,5 +1,7 @@
 ---
 
+# http://docs.ansible.com/ansible/latest/playbooks_loops.html#loops-and-includes-in-2-0
+
 - name: Check target repository
   uri:
    url: "http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}"
@@ -11,7 +13,7 @@
   uri:
     method: POST
     url: "http://localhost:8080/rdf4j-workbench/repositories/NONE/create"
-    body: "Repository%20ID={{ rdf_repo }}&create=Create&Persist=true&delay=0&Repository%20title={{ title }}&type={{ repo_type }}"
+    body: "Repository%20ID={{ rdf_repo }}&create=Create&Persist=true&delay=0&Repository%20title={{ repo_title }}&type={{ repo_type }}"
     HEADER_Content-Type: "application/x-www-form-urlencoded"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
@@ -20,15 +22,19 @@
   when: repository.status == 404
 
 - name: load SPIN entailment rules
-  shell: "curl -X PUT -T {{item }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/rules/{{ item }}"
+  shell: "curl -X PUT -T {{ fileitem }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/rules/{{ fileitem }}"
   with_fileglob:
     - "{{ files_dir }}/entailments/*.ttl"
+  loop_control:
+    loop_var: fileitem
   tags: loaddata, loadrules
   when: repository.status == 404
 
 - name: load data
-  shell: "curl -X PUT -T {{item }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/def/{{ item }}"
+  shell: "curl -X PUT -T {{ fileitem }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/def/{{ fileitem }}"
   with_fileglob:
     - "{{ files_dir }}/*.ttl"
-  tags: loaddata
+  loop_control:
+    loop_var: fileitem
+  tagitems: loaddata
   when: repository.status == 404

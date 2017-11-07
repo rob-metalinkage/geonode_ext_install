@@ -51,6 +51,6 @@
   file: path=/var/lib/{{ tomcat }}/webapps/dna/lda-assets/resources group={{ tomcat }} owner={{ tomcat }} mode=755 
   tags: [elda, elda-config]
   
-- include: repo.yml rdf_repo="{{ item.repo }}" repo_type="{{ item.type }}" title="{{ item.title }}" files_dir="{{ item.files }}"
+- include: repo.yml rdf_repo="{{ item.repo }}" repo_type="{{ item.type }}" repo_title="{{ item.repo_title }}" files_dir="{{ item.files_dir }}"
   with_items: "{{ repos }}"
   
