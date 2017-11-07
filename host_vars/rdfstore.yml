@@ -8,3 +8,6 @@ url_app: '{{ top_project }}/django-rdf_io'
 rdf4j_ver: 2.2.2
 tomcat: tomcat8
 downloads_persist: downloads 
+
+repos:
+  - { repo: 'test', repo_title: 'Test repo - configure in host_vars/rdfstore.yml',  type: 'memory-spin-rdfs' , files_dir: 'test'}

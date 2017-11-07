@@ -1,0 +1,34 @@
+---
+
+- name: Check target repository
+  uri:
+   url: "http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}"
+  tags: createrepo
+  failed_when: false
+  register: repository
+
+- name: Create target repository
+  uri:
+    method: POST
+    url: "http://localhost:8080/rdf4j-workbench/repositories/NONE/create"
+    body: "Repository%20ID={{ rdf_repo }}&create=Create&Persist=true&delay=0&Repository%20title={{ title }}&type={{ repo_type }}"
+    HEADER_Content-Type: "application/x-www-form-urlencoded"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    status_code: 302
+  tags: createrepo
+  when: repository.status == 404
+
+- name: load SPIN entailment rules
+  shell: "curl -X PUT -T {{item }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/rules/{{ item }}"
+  with_fileglob:
+    - "{{ files_dir }}/entailments/*.ttl"
+  tags: loaddata, loadrules
+  when: repository.status == 404
+
+- name: load data
+  shell: "curl -X PUT -T {{item }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/def/{{ item }}"
+  with_fileglob:
+    - "{{ files_dir }}/*.ttl"
+  tags: loaddata
+  when: repository.status == 404
