@@ -61,7 +61,7 @@
     repo_title="Test repo - configure in roles/sissvoc/tasks/elda.yml"
     files_dir="../../../test"
   
- name: Check target repository
+- name: Check target repository
   uri:
    url: "http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}"
   tags: createrepo
