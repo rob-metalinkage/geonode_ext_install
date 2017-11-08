@@ -56,10 +56,10 @@
 # ansible 2 - cant loop to make multiple repo... setting up just one
 # repo_title: 'Test repo - configure in host_vars/rdfstore.yml',  type: 'memory-spin-rdfs' , files_dir: '../../../test'}
 - set_fact:
-    rdf_repo="test"
-    repo_type="memory-spin-rdfs
-    repo_title="Test repo - configure in roles/sissvoc/tasks/elda.yml"
-    files_dir="../../../test"
+    rdf_repo: "test"
+    repo_type: "memory-spin-rdfs
+    repo_title: "Test repo - configure in roles/sissvoc/tasks/elda.yml"
+    files_dir: "../../../test"
   
 - name: Check target repository
   uri:
