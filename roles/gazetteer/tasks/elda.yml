@@ -25,9 +25,6 @@
   wait_for:
     path: /var/lib/{{ tomcat }}/webapps/rdf4j-server
     state: present
-
-
-
   
 - name: install Linked Data API
   get_url: dest={{ downloads_persist }}/dna.war force=no  url=https://github.com/rob-metalinkage/dna_demodata/blob/master/dna.war?raw=true
@@ -37,7 +34,12 @@
   # Will skip if file war installed
   command: cp {{ downloads_persist }}/dna.war /var/lib/{{ tomcat }}/webapps/ creates=/var/lib/{{ tomcat }}/webapps/dna.war
   tags: elda
-  
+
+- name: wait for war to deploy
+  wait_for:
+    path: /var/lib/{{ tomcat }}/webapps/dna/lda-assets/resources/
+    state: present
+    
 - name: clear bundled ELDA configs
   file: dest=/var/lib/{{ tomcat }}/webapps/dna/lda-assets/resources/* state=absent
   tags: [elda, elda-config]
@@ -50,7 +52,49 @@
 - name: set perms 
   file: path=/var/lib/{{ tomcat }}/webapps/dna/lda-assets/resources group={{ tomcat }} owner={{ tomcat }} mode=755 
   tags: [elda, elda-config]
+
+# ansible 2 - cant loop to make multiple repo... setting up just one
+# repo_title: 'Test repo - configure in host_vars/rdfstore.yml',  type: 'memory-spin-rdfs' , files_dir: '../../../test'}
+- set_fact:
+    rdf_repo="test"
+    repo_type="memory-spin-rdfs
+    repo_title="Test repo - configure in roles/sissvoc/tasks/elda.yml"
+    files_dir="../../../test"
   
-- include: repo.yml rdf_repo="{{ item.repo }}" repo_type="{{ item.type }}" repo_title="{{ item.repo_title }}" files_dir="{{ item.files_dir }}"
-  with_items: "{{ repos }}"
+ name: Check target repository
+  uri:
+   url: "http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}"
+  tags: createrepo
+  failed_when: false
+  register: repository
+
+- name: Create target repository
+  uri:
+    method: POST
+    url: "http://localhost:8080/rdf4j-workbench/repositories/NONE/create"
+    body: "Repository%20ID={{ rdf_repo }}&create=Create&Persist=true&delay=0&Repository%20title={{ repo_title }}&type={{ repo_type }}"
+    HEADER_Content-Type: "application/x-www-form-urlencoded"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    status_code: 302
+  tags: createrepo
+  when: repository.status == 404
+
+- name: load SPIN entailment rules
+  shell: "curl -X PUT -T {{ item }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/rules/{{ item }}"
+  with_fileglob:
+    - "{{ files_dir }}/entailments/*.ttl"
+  tags: loaddata, loadrules
+  when: repository.status == 404
+
+- name: load data
+  shell: "curl -X PUT -T {{ item }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/def/{{ item }}"
+  with_fileglob:
+    - "{{ files_dir }}/*.ttl"
+  tagitems: loaddata
+  when: repository.status == 404
+
+# ansible 2.3 works better   
+#- include: repo.yml rdf_repo="{{ item.repo }}" repo_type="{{ item.type }}" repo_title="{{ item.repo_title }}" files_dir="{{ item.files_dir }}"
+#  with_items: "{{ repos }}"
   
