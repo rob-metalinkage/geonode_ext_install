@@ -91,7 +91,7 @@
   shell: "curl -X PUT -T {{ item }} -H \"Content-Type: text/turtle;charset=UTF-8\" http://localhost:8080/rdf4j-server/repositories/{{ rdf_repo }}/rdf-graphs/service?graph=http://www.opengis.net/def/{{ item }}"
   with_fileglob:
     - "{{ files_dir }}/*.ttl"
-  tagitems: loaddata
+  tags: loaddata
   when: repository.status == 404
 
 # ansible 2.3 works better   
